@@ -5,16 +5,17 @@ var isString = require('./common/typeCheck.js').isString;
 var isFunction = require('./common/typeCheck.js').isFunction;
 
 function makeClassBuilder(WithTraitClassBuilder) {
-  function ClassBuilder(name) {
-    if (isFunction(name)) {
-      this.Ctor = name;
-      name = name.name;
+  function ClassBuilder(Ctor, name) {
+    if (isFunction(Ctor)) {
+      this.Ctor = Ctor;
+      name = name || Ctor.name;
     } else {
-      this.Ctor = function () {
+      this.Ctor = function Class() {
         if (this.constructor) {
           this.constructor.apply(this, arguments);
         }
       };
+      name = Ctor
     }
 
     this.name = name;
@@ -27,6 +28,7 @@ function makeClassBuilder(WithTraitClassBuilder) {
       body = body || {};
       extend(this.Ctor.prototype, body);
       this.Ctor.prototype.name = this.name;
+      this.Ctor.prototype.__name__ = this.name;
       return this.Ctor;
     },
 
@@ -43,7 +45,7 @@ function makeClassBuilder(WithTraitClassBuilder) {
     },
 
     with: function (trt) {
-      extend(this.Ctor.prototype, trt);
+      extend(this.Ctor.prototype, trt.prototype);
       return new WithTraitClassBuilder(this);
     }
   };
@@ -62,11 +64,12 @@ function makeWithTraitClassBuilder() {
       body = body || {};
       extend(this.Ctor.prototype, body);
       this.Ctor.prototype.name = this.name;
+      this.Ctor.prototype.__name__ = this.name;
       return this.Ctor;
     },
 
     with: function (trt) {
-      extend(this.Ctor.prototype, trt);
+      extend(this.Ctor.prototype, trt.prototype);
       return this;
     }
   };
@@ -77,8 +80,8 @@ function makeWithTraitClassBuilder() {
 var WithTraitClassBuilder = makeWithTraitClassBuilder();
 var ClassBuilder = makeClassBuilder(WithTraitClassBuilder);
 
-function Class(name, Ctor) {
-  return new ClassBuilder(name, Ctor);
+function Class(Ctor, name) {
+  return new ClassBuilder(Ctor, name);
 }
 
 exports.makeClassBuilder = makeClassBuilder;

@@ -1,20 +1,29 @@
 var extend = require('./common/extend.js').extend;
+var isFunction = require('./common/typeCheck.js').isFunction;
 
 function TraitBuilder(name) {
-  this.trt = {};
-  this.trt.name = name;
-  this.trt['__' + name + '__'] = true;
+  if (isFunction(name)) {
+    this.trt = name;
+    name = name.name;
+  }
+  else {
+    this.trt = function Trait() {
+    };
+  }
+
+  this.trt.prototype.name = name;
+  this.trt.prototype['__' + name + '__'] = true;
 }
 
 TraitBuilder.prototype = {
-  with: function (body) {
-    extend(this.trt, body);
+  with: function (trt) {
+    extend(this.trt.prototype, trt.prototype);
     return this;
   },
 
   body: function (body) {
     body = body || {};
-    extend(this.trt, body);
+    extend(this.trt.prototype, body);
     return this.trt;
   }
 };

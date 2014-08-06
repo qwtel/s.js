@@ -1,14 +1,20 @@
-var Class = require('./lang/Class.js').Class;
-var Singleton = require('./lang/Singleton.js').Singleton;
-var CaseClass = require('./lang/Class.js').CaseClass;
-var CaseSingleton = require('./lang/CaseSingleton.js').CaseSingleton;
-var Trait = require('./lang/Trait.js').Trait;
+var lang = require('./lang.js');
+
+var Class = lang.Class;
+var Singleton = lang.Singleton;
+var CaseClass = lang.CaseClass;
+var CaseSingleton = lang.CaseSingleton;
+var Trait = lang.Trait;
+
+var exception = require('./lang/exception.js');
 
 var any = require('./Any.js');
 var equals = require('./Equals.js');
-var exceptions = require('./Exceptions.js');
+var option = require('./Option.js');
 
 var s = {
+  _: undefined,
+  
   Class: Class,
   Singleton: Singleton,
   CaseClass: CaseClass,
@@ -16,7 +22,11 @@ var s = {
   Trait: Trait,
   
   Any: any.Any,
-  Equals: equals.Equals
+  Equals: equals.Equals,
+  
+  Option: option.Option,
+  Some: option.Some,
+  None: option.None
 };
 
 module.exports = s;

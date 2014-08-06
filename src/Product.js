@@ -1,8 +1,11 @@
 var Any = require('./Any.js').Any;
-var Class = require('./lang/Class.js').Class;
 var Equals = require('./Equals.js').Equals;
-var IndexOutOfBoundsException = require('./Exceptions.js').IndexOutOfBoundsException;
+
+var Class = require('./lang/Class.js').Class;
 var Trait = require('./lang/Trait.js').Trait;
+
+var exception = require('./lang/exception.js');
+var IndexOutOfBoundsException = exception.IndexOutOfBoundsException;
 
 var equals = require('./lang/common/equals.js').equals;
 

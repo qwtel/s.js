@@ -6,7 +6,6 @@ var makeWithTraitClassBuilder = require('./Class.js').makeWithTraitClassBuilder;
 var caseClassify = require('./common/caseClassify.js').caseClassify;
 var isFunction = require('./common/typeCheck.js').isFunction;
 
-
 function getName(fn) {
   // TODO: Cross-browser?
   return fn.name;

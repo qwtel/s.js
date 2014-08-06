@@ -1,4 +1,4 @@
-var Class = require('./lang/Class.js').Class;
+var Class = require('./Class.js').Class;
 
 var Throwable = Class("Throwable").extends(Error).body({
   constructor: function (message, fileName, lineNumber) {

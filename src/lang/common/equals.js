@@ -7,9 +7,9 @@ function equals(o1, o2) {
     }
   } else {
     if (o2.equals) {
-      return o1 === o2;
-    } else {
       return false;
+    } else {
+      return o1 === o2;
     }
   }
 }

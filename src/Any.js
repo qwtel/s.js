@@ -8,11 +8,16 @@ Any.prototype = {
 
   __Any__: true,
 
+  // TODO: less fuckup
   isInstanceOf: function (classLike) {
     if (isString(classLike)) {
       return this['__' + classLike + '__'] === true;
-    } else if (classLike.name) {
-      return this['__' + classLike.name + '__'] === true;
+    } else if (classLike.__name__) {
+      return this['__' + classLike.__name__ + '__'] === true;
+    } else if (classLike.prototype.__name__) {
+      return this['__' + classLike.prototype.__name__ + '__'] === true;
+    } else if (classLike.__product__) {
+      return this['__' + classLike.__product__ + '__'] === true;
     } else {
       return this instanceof classLike;
     }

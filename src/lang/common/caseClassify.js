@@ -1,4 +1,4 @@
-var IndexOutOfBoundsException = require('../../Exceptions.js').IndexOutOfBoundsException;
+var IndexOutOfBoundsException = require('../exception.js').IndexOutOfBoundsException;
 var Product = require('../../Product.js').Product;
 
 var extend = require('./extend.js').extend;
@@ -69,7 +69,7 @@ function caseClassify(Ctor) {
     });
   };
 
-  extend(Ctor.prototype, Product);
+  extend(Ctor.prototype, Product.prototype);
   extend(Ctor.prototype, {
 
     // TODO: Better name?

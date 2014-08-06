@@ -1,6 +1,8 @@
 var Any = require('./Any.js').Any;
-var Class = require('./lang/Class.js').Class;
-var Trait = require('./lang/Trait.js').Trait;
+
+var lang = require('./lang.js');
+var Class = lang.Class;
+var Trait = lang.Trait;
 
 var product = require('./Product.js');
 var Product = product.Product;
