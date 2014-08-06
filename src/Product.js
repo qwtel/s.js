@@ -1,5 +1,3 @@
-var __ = require('./__.js');
-
 var Any = require('./Any.js').Any;
 var Class = require('./lang/Class.js').Class;
 var Equals = require('./Equals.js').Equals;
@@ -93,10 +91,6 @@ var Product3 = Trait("Product3").with(Product).body({
   _3: Trait.required
 });
 
-__.Product1 = Product1;
-__.Product2 = Product2;
-__.Product3 = Product3;
-
 function createProduct(n) {
   var body = {
     productArity: function () {
@@ -111,6 +105,7 @@ function createProduct(n) {
   return Trait("Product" + n).with(Product).body(body);
 }
 
+var __ = {};
 function getProduct(n) {
   if (!__['Product' + n]) {
     __['Product' + n] = createProduct(n);

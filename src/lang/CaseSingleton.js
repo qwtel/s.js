@@ -5,7 +5,7 @@ var makeCaseClassBuilder = require('./CaseClass.js').makeCaseClassBuilder;
 var makeWithTraitCaseClassBuilder = require('./CaseClass.js').makeWithTraitCaseClassBuilder;
 
 var makeSingletonBuilder = require('./Singleton.js').makeSingletonBuilder;
-var makeWithTraitSingletonBuilder = require('./Singleton.js').makeWithTraitCaseClassBuilder;
+var makeWithTraitSingletonBuilder = require('./Singleton.js').makeWithTraitSingletonBuilder;
 
 // Where is your god now?
 var WithTraitCaseSingletonBuilder = makeWithTraitSingletonBuilder(makeWithTraitCaseClassBuilder(makeWithTraitClassBuilder()));

@@ -1,5 +1,3 @@
-var __ = require('./__.js');
-
 var Any = require('./Any.js').Any;
 var Class = require('./lang/Class.js').Class;
 var Trait = require('./lang/Trait.js').Trait;
@@ -36,6 +34,7 @@ function createTuple(n) {
   });
 }
 
+var __ = {};
 function getTuple(n) {
   if (!__['Tuple' + n]) {
     __['Tuple' + n] = createTuple(n);

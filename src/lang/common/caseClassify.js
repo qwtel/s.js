@@ -1,8 +1,8 @@
-var IndexOutOfBoundsException = require('../Exceptions.js').IndexOutOfBoundsException;
-var Product = require('../Product.js').Product;
+var IndexOutOfBoundsException = require('../../Exceptions.js').IndexOutOfBoundsException;
+var Product = require('../../Product.js').Product;
 
-var extend = require('./common/extend.js').extend;
-var match = require('./common/match.js').match;
+var extend = require('./extend.js').extend;
+var match = require('./match.js').match;
 
 /**
  * (c) Angular.js
