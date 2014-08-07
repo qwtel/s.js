@@ -1,7 +1,7 @@
 # s.js
 
 Adding functional stuff to vanilla JavaScript.
-Formerly known as 'scala-ish.js'.
+Formerly known as "scala-ish.js".
 
 ## Highlights
 
@@ -13,7 +13,7 @@ Writing custom exceptions in JavaScript is hard.
 Here is how you do it with s.js.
 Complete with stack trace and everything.
 
-    var MyException = Class("MyException").extendz(RuntimeException).body();
+    var MyException = Class("MyException").extends(RuntimeException).body();
     throw new MyException("My description");
 
 ### Options
@@ -42,6 +42,7 @@ Yup.
     fooCopy.c // => 5
     
     fooCopy.toJSON() // => {a: 2, b: 2, c: 5};
+    Foo.fromJSON({a: 1, b: 2, c: 3}) // => Foo(1,2,3)
     
     fooCopy.toString() // => "Foo(2,2,5)"
     
@@ -54,9 +55,10 @@ Yup.
     
     bar.equals(foo) // => false
     
-    Foo.fromJSON({a: 1, b: 2, c: 3}) // => Foo(1,2,3)
+    Foo.app(1,2,3) // => Foo(1,2,3)
+    Foo.unApp(foo) // => [1,2,3]
     
-### Pattern matching*
+### Pseudo pattern matching*
 
 \* Still pretty hacky
 
@@ -66,8 +68,7 @@ Yup.
       })
       .case(undefined, function () {
         return 0;
-      })
-      .get() // => 1
+      }) // => 1
 
 ### Tuples
 
@@ -84,7 +85,7 @@ Thank you `s`.
   
 Up to infinity.
 
-### Traits*
+### Traits
 
 Not as academic as [traits.js](http://soft.vub.ac.be/~tvcutsem/traitsjs/). 
 Faster though.
@@ -99,7 +100,7 @@ Faster though.
     });
     
     // TODO: Don't let Trait.required override stuff
-    var FooBar = Class("FooBar").extendz(Barable).withz(Fooable).body({
+    var FooBar = Class("FooBar").extends(Barable).with(Fooable).body({
       fooBar: function () { return this.bar() }
     });
     
@@ -108,13 +109,17 @@ Faster though.
     
 ### Singletons
 
-    var FooService = Singleton("FooService").withz(Fooable).body({
+    var FooService = Singleton("FooService").with(Fooable).body({
       callFoo: function () { return this.foo() }
     });
     
     FooService.callFoo();
     
 ### Lists
+
+TODO
+
+### Other containers
 
 TODO
 
@@ -131,15 +136,21 @@ TODO, but here is how it's going to work.
     var wrappedArray = w([1,2,1]) // => WrappedArray
     wrappedArray.groupBy(function(elem) { return elem }) // => {1: [1, 1], 2: [2]}
     
-### For comprehensions
+### Pseudo for-comprehensions
 
-For comic relieve only
+For comic relieve only.
 
-    forz(
+    For(
       w(0).until(3), 
       w(0).until(3)
-    ).yieldz(function(x, y) { 
+    ).yield(function(x, y) { 
       return x + y 
     }) // => ?(0, 1, 2, 1, 2, 3, 2, 3, 4)
     
 [Atwood's Law](http://en.wikipedia.org/wiki/Jeff_Atwood#cite_ref-6).
+
+## Disclaimer
+
+This is experimental software. No warranties. 
+
+Don't touch the `__(.*)__` fields.  They are all going to change.

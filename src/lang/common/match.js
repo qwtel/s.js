@@ -21,12 +21,16 @@ Case.prototype = {
    * @param {object=} context
    * @return {Match|Case}
    */
-  case: function (other, f, context) {
+  caze: function (other, f, context) {
     if (other !== undefined) {
       return this.doCase(other, f, context);
     } else {
-      return this.default(f, context);
+      return this.default(f, context).get();
     }
+  },
+  
+  'case': function (other, f, context) {
+    return this.caze(other, f, context);
   },
 
   doCase: function (other, f, context) {
@@ -39,12 +43,20 @@ Case.prototype = {
    * Can't get a result before a matching pattern has been found.
    * @throws {Error}
    */
-  get: function () {
+  getz: function () {
     throw new Error("MatchError");
   },
+  
+  'get': function () {
+    return this.getz();
+  },
+  
+  defaultz: function (f, context) {
+    return new Match(f.call(context, this.o)).get();
+  },
 
-  default: function (f, context) {
-    return new Match(f.call(context, this.o));
+  'default': function (f, context) {
+    return this.defaultz(f, context);
   }
 };
 
@@ -124,10 +136,18 @@ function Match(res) {
 
 Match.prototype = {
   /**
-   * @return {Match}
+   * @return {Match|*}
    */
-  case: function () {
-    return this;
+  caze: function (other) {
+    if (other !== undefined) {
+      return this;
+    } else {
+      return this.getz();
+    }
+  },
+  
+  'case': function (other) {
+    return this.caze(other);
   },
 
   /**
@@ -135,7 +155,11 @@ Match.prototype = {
    * This call to res is optional if you are not interested in the result.
    * @return {R}
    */
-  get: function () {
+  getz: function () {
+    return this.res;
+  },
+  
+  'get': function () {
     return this.res;
   }
 };
