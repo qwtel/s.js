@@ -1,7 +1,7 @@
 {
   "name": "s.js",
   "version": "0.0.1",
-  "description": "Formally known as 'scala-ish.js'.",
+  "description": "Formerly known as 'scala-ish.js'.",
   "author": "Florian Klampfer <f.klampfer@gmail.com>",
   "main": "src/s.js",
   "repository": {
