@@ -1,3 +1,5 @@
+var s = require('./global.js').s;
+
 var lang = require('./lang.js');
 var Class = lang.Class;
 var CaseClass = lang.CaseClass;
@@ -167,11 +169,19 @@ var Option = Trait(function Option(x) {
   // TODO: toList
 
   toRight: function (left, context) {
-    //return this.isEmpty() ? Left(result(left, context)) : Right(this.get());
+    if (s.Either) {
+      return this.isEmpty() ? s.Left(result(left, context)) : s.Right(this.get());
+    } else {
+      throw Error("Module 'Either' not loaded.");
+    }
   },
 
   toLeft: function (right, context) {
-    //return this.isEmpty() ? Right(result(right, context)) : Left(this.get());
+    if (s.Either) {
+      return this.isEmpty() ? s.Right(result(right, context)) : s.Left(this.get());
+    } else {
+      throw Error("Module 'Either' not loaded.");
+    }
   }
 });
 
