@@ -19,19 +19,23 @@ function TraitBuilder(name) {
 }
 
 TraitBuilder.prototype = {
-  withz: function (Trait) {
-    extend(this.Ctor.prototype, Trait.prototype);
-    return this;
+  withz: function (trt) {
+    if (isFunction(trt)) { // Traits are functions
+      extend(this.Ctor.prototype, trt.prototype);
+      return this;
+    } else {
+      return this.body(trt);
+    }
   },
   
-  'with': function (Trait) {
-    return this.withz(Trait);
+  'with': function (trt) {
+    return this.withz(trt);
   },
   
-  extendz: function (Trait) {
-    this.Ctor.prototype = Object.create(Trait.prototype);
+  extendz: function (trt) {
+    this.Ctor.prototype = Object.create(trt.prototype);
 
-    if (!Trait.__Any__) {
+    if (!trt.__Any__) {
       extend(this.Ctor.prototype, Any.prototype);
     }
 
@@ -41,8 +45,8 @@ TraitBuilder.prototype = {
     return this;
   },
   
-  'extends': function (Trait) {
-    return this.extendz(Trait);
+  'extends': function (trt) {
+    return this.extendz(trt);
   },
   
   body: function (body) {

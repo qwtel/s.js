@@ -49,16 +49,16 @@ function makeClassBuilder(WithTraitClassBuilder) {
     },
 
     withz: function (trt) {
-      extend(this.Ctor.prototype, trt.prototype);
-      return new WithTraitClassBuilder(this);
-    },
-
-    'with': function (trt) {
       if (isFunction(trt)) { // Traits are functions
-        return this.withz(trt);
+        extend(this.Ctor.prototype, trt.prototype);
+        return new WithTraitClassBuilder(this);
       } else {
         return this.body(trt);
       }
+    },
+
+    'with': function (trt) {
+      return this.withz(trt);
     }
   };
 
@@ -81,16 +81,16 @@ function makeWithTraitClassBuilder() {
     },
 
     withz: function (trt) {
-      extend(this.Ctor.prototype, trt.prototype);
-      return this;
-    },
-
-    'with': function (trt) {
       if (isFunction(trt)) { // Traits are functions
-        return this.withz(trt);
+        extend(this.Ctor.prototype, trt.prototype);
+        return this;
       } else {
         return this.body(trt);
       }
+    },
+
+    'with': function (trt) {
+      return this.withz(trt);
     }
   };
 
