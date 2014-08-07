@@ -2095,28 +2095,28 @@ var isFunction = require('./common/typeCheck.js').isFunction;
 
 function TraitBuilder(name) {
   if (isFunction(name)) {
-    this.trt = name;
+    this.Trait = name;
     name = name.name;
   }
   else {
-    this.trt = function Trait() {
+    this.Trait = function Trait() {
     };
   }
 
-  this.trt.prototype.name = name;
-  this.trt.prototype['__' + name + '__'] = true;
+  this.Trait.prototype.name = name;
+  this.Trait.prototype['__' + name + '__'] = true;
 }
 
 TraitBuilder.prototype = {
   with: function (trt) {
-    extend(this.trt.prototype, trt.prototype);
+    extend(this.Trait.prototype, trt.prototype);
     return this;
   },
 
   body: function (body) {
     body = body || {};
-    extend(this.trt.prototype, body);
-    return this.trt;
+    extend(this.Trait.prototype, body);
+    return this.Trait;
   }
 };
 

@@ -4,6 +4,8 @@ var Product = require('../../Product.js').Product;
 var extend = require('./extend.js').extend;
 var match = require('./match.js').match;
 
+var isObject = require('./typeCheck.js').isObject;
+
 /**
  * (c) Angular.js
  */
@@ -33,11 +35,13 @@ function getName(fn) {
   return fn.name;
 }
 
-function caseClassify(Ctor) {
-
-  var name = getName(Ctor);
-  var argumentNames = getArgumentNames(Ctor);
-
+function caseClassify(Ctor, name, defaults) {
+  
+  name = name || getName(Ctor);
+  var argumentNames = isObject(defaults) ? Object.keys(defaults) : getArgumentNames(Ctor);
+  
+  defaults = defaults || {}; // prevent exceptions
+  
   var Factory = function () {
     return Factory.app.apply(undefined, arguments);
   };
@@ -50,15 +54,15 @@ function caseClassify(Ctor) {
   Factory.fromJSON = function (jsonObj) {
     var cc = new Ctor();
     Object.keys(jsonObj).forEach(function (name) {
-      cc[name] = jsonObj[name];
+      cc[name] = jsonObj[name] || defaults[argumentNames[i]];
     });
     return cc;
   };
 
   Factory.app = function () {
     var cc = new Ctor();
-    for (var i = 0; i < arguments.length; i++) {
-      cc[argumentNames[i]] = arguments[i];
+    for (var i = 0; i < argumentNames.length; i++) {
+      cc[argumentNames[i]] = arguments[i] || defaults[argumentNames[i]];
     }
     return cc;
   };

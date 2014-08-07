@@ -173,7 +173,6 @@ var Option = Trait(function Option(x) {
   toLeft: function (right, context) {
     //return this.isEmpty() ? Right(result(right, context)) : Left(this.get());
   }
-
 });
 
 Option.empty = function () {
@@ -182,7 +181,7 @@ Option.empty = function () {
 
 var Some = CaseClass(function Some(x) {
   this.x = x;
-}).with(Option).body({
+}).extends(Option).body({
 
   get: function () {
     return this.x;
@@ -194,7 +193,7 @@ var Some = CaseClass(function Some(x) {
 });
 
 var None = CaseSingleton(function None() {
-}).with(Option).body({
+}).extends(Option).body({
 
   get: function () {
     throw new NoSuchElementException("None.get");

@@ -1,3 +1,5 @@
+var argv = require('yargs').argv;
+
 var gulp = require('gulp');
 var browserify = require('gulp-browserify');
 
@@ -14,12 +16,13 @@ gulp.task('development', ['watch']);
 gulp.task('default', ['development']);
 
 gulp.task('test', function () {
-  gulp.src(paths.testCoffee)
+  var path = argv.file ? ('test/**/' + argv.file + '.coffee') : paths.testCoffee;
+  gulp.src(path)
     .pipe(coffee())
     .pipe(gulp.dest('test'))
     .pipe(jasmine({
-      verbose: true, 
-      includeStackTrace: true
+      verbose: !!argv.verbose, 
+      includeStackTrace: !!argv.stack
     }));
 });
 

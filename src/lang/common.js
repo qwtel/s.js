@@ -1,6 +1,7 @@
 var caseClassify = require('./common/caseClassify.js').caseClassify;
 var equals = require('./common/equals.js').equals;
 var extend = require('./common/extend.js').extend;
+var isInstanceOf = require('./common/isInstanceOf.js').isInstanceOf;
 var match = require('./common/match.js').match;
 var result = require('./common/result.js').result;
 var isFunction = require('./common/typeCheck.js').isFunction;

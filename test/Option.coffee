@@ -91,20 +91,25 @@ describe 'A Option', ->
 
   it 'should have equality', ->
     expect(Some(1)).toEqual(Some(1))
-    expect(None).toEqual(None)
     expect(Option(3)).toEqual(Option(3))
 
+  it 'should have equality on `None`', ->
+    expect(None).toEqual(None)
+
+  it 'should have canEqual', ->
     expect(o.canEqual).toBeDefined()
     expect(o.canEqual('Some')).toBe(true)
 
   it 'should be `None` when passed `null` or `undefined`', ->
     expect(Option(null)).toEqual(None)
     expect(Option(undefined)).toEqual(None)
-    expect(Some(null).get()).toEqual(null)
 
   it 'should contain the correct value', ->
     expect(o.get()).toBe(1)
     expect(-> n.get()).toThrow();
+
+  it 'should be able to store null in `Some`', ->
+    expect(Some(null).get()).toEqual(null)
 
   it 'should have a working `getOrElse` implementation', ->
     expect(o.getOrElse(2)).toBe(1)

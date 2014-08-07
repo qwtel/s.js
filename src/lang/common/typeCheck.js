@@ -5,6 +5,10 @@
     }
   });
 
-exports.isString = function(s) {
+exports.isString = function (s) {
   return typeof s === 'string';
+};
+
+exports.isArray = function (arr) {
+  return Array.isArray(arr);
 };

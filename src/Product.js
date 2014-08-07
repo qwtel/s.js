@@ -1,3 +1,5 @@
+var s = require('./global.js').s;
+
 var Any = require('./Any.js').Any;
 var Equals = require('./Equals.js').Equals;
 
@@ -8,6 +10,7 @@ var exception = require('./lang/exception.js');
 var IndexOutOfBoundsException = exception.IndexOutOfBoundsException;
 
 var equals = require('./lang/common/equals.js').equals;
+var isInstanceOf = require('./lang/common/isInstanceOf.js').isInstanceOf;
 
 var Product = Trait("Product").with(Equals).body({
   productElement: function (n) {
@@ -35,7 +38,7 @@ var Product = Trait("Product").with(Equals).body({
       }
     }));
   },
-  
+
   // Hacky implementation, good enough for now
   toString: function () {
     var values = [];
@@ -44,14 +47,14 @@ var Product = Trait("Product").with(Equals).body({
     }
     return this.productPrefix + '(' + values.join(',') + ')';
   },
-  
-  canEqual: function (that) {
-    return that.isInstanceOf(this.getClass());
+
+  canEqual: function (That) {
+    return isInstanceOf(this, That);
   },
-  
+
   equals: function (other) {
-    if (other.__Product__) {
-      if (this.productArity() === other.productArity()) {
+    if (this.__name__ === other.__name__) {
+      if (other.productArity && this.productArity() === other.productArity()) {
         var res = true;
         for (var i = 0; i < this.productArity(); i++) {
           res = res && equals(this.productElement(i), other.productElement(i))
@@ -61,13 +64,13 @@ var Product = Trait("Product").with(Equals).body({
     }
     return false;
   },
-  
+
   // ???
   productPrefix: ''
 
 });
 
-var Product1 = Trait("Product1").with(Product).body({
+var Product1 = Trait("Product1").extends(Product).body({
   productArity: function () {
     return 1;
   },
@@ -75,7 +78,7 @@ var Product1 = Trait("Product1").with(Product).body({
   _1: Trait.required
 });
 
-var Product2 = Trait("Product2").with(Product).body({
+var Product2 = Trait("Product2").extends(Product).body({
   productArity: function () {
     return 2;
   },
@@ -84,7 +87,7 @@ var Product2 = Trait("Product2").with(Product).body({
   _2: Trait.required
 });
 
-var Product3 = Trait("Product3").with(Product).body({
+var Product3 = Trait("Product3").extends(Product).body({
   productArity: function () {
     return 3;
   },
@@ -105,15 +108,14 @@ function createProduct(n) {
     body['_' + i] = Trait.required;
   }
 
-  return Trait("Product" + n).with(Product).body(body);
+  return Trait("Product" + n).extends(Product).body(body);
 }
 
-var __ = {};
 function getProduct(n) {
-  if (!__['Product' + n]) {
-    __['Product' + n] = createProduct(n);
+  if (!s['Product' + n]) {
+    s['Product' + n] = createProduct(n);
   }
-  return __['Product' + n];
+  return s['Product' + n];
 }
 
 exports.Product = Product;
@@ -123,5 +125,5 @@ exports.Product3 = Product3;
 exports.getProduct = getProduct;
 
 for (var i = 4; i <= 22; i++) {
-  exports['Product' + i] = createProduct(i);
+  exports['Product' + i] = getProduct(i);
 }
