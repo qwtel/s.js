@@ -14,6 +14,9 @@ var option = require('./Option.js');
 var any = require('./Any.js');
 var equals = require('./Equals.js');
 
+var common = require('./lang/common.js');
+
+s.common = common;
 s = extend(s, lang);
 s = extend(s, exception);
 s = extend(s, product);

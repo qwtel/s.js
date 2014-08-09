@@ -1,21 +1,25 @@
 var extend = require('./extend.js').extend;
 var isFunction = require('./typeCheck.js').isFunction;
 
-function wrap(target) {
-  function Wrapped () {
+function wrap(target, Class) {
+  function Obj () {
     return target.app.apply(target, arguments);
+  }
+  
+  if (Class) {
+    Obj.prototype = Class.prototype;
   }
   
   Object.keys(target).forEach(function (key) {
     var value = target[key];
     if (isFunction(value)) {
-      Wrapped[key] = value.bind(target);
+      Obj[key] = value.bind(target);
     } else {
-      Wrapped[key] = value;
+      Obj[key] = value;
     }
   });
 
-  return Wrapped;
+  return Obj;
 }
 
 exports.wrap = wrap;

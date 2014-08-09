@@ -1,8 +1,8 @@
 function extend(obj, by) {
   by = by || {};
-  Object.keys(by).forEach(function (key) {
+  for (var key in by) {
     obj[key] = by[key];
-  });
+  }
   return obj;
 }
 

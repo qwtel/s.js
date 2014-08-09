@@ -45,12 +45,14 @@ function caseClassify(Ctor, name, defaults) {
   var Factory = function () {
     return Factory.app.apply(undefined, arguments);
   };
+  
+  Factory.prototype = Ctor.prototype;
 
   // TODO: What is the name property anyway?
   Factory.name = name;
 
   Factory.__product__ = name;
-
+  
   Factory.fromJSON = function (jsonObj) {
     var cc = new Ctor();
     Object.keys(jsonObj).forEach(function (name) {
