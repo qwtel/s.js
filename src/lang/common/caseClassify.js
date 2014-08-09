@@ -30,14 +30,8 @@ function getArgumentNames(fn) {
   return res;
 }
 
-function getName(fn) {
-  // TODO: Cross-browser?
-  return fn.name;
-}
-
 function caseClassify(Ctor, name, defaults) {
   
-  name = name || getName(Ctor);
   var argumentNames = isObject(defaults) ? Object.keys(defaults) : getArgumentNames(Ctor);
   
   defaults = defaults || {}; // prevent exceptions
@@ -50,7 +44,9 @@ function caseClassify(Ctor, name, defaults) {
 
   // TODO: What is the name property anyway?
   Factory.name = name;
+  Factory.__name__ = name;
 
+  // TODO: undo
   Factory.__product__ = name;
   
   Factory.fromJSON = function (jsonObj) {
@@ -81,10 +77,12 @@ function caseClassify(Ctor, name, defaults) {
     // TODO: Better name?
     __factory__: Factory,
 
+    // has been overridden by Product.prototype
+    __name__: name,
     name: name,
 
     copy: function (patchObj) {
-      var copy = new Ctor({});
+      var copy = new Ctor();
       argumentNames.forEach(function (name) {
         if (patchObj[name]) copy[name] = patchObj[name];
         else copy[name] = this[name];
@@ -118,10 +116,12 @@ function caseClassify(Ctor, name, defaults) {
      },
      */
 
+    /*
     hashCode: function () {
       console.warn("hashCode implementation missing");
       return -1;
     },
+    */
 
     /*
      toString: function () {
@@ -133,7 +133,7 @@ function caseClassify(Ctor, name, defaults) {
     toJSON: function () {
       var res = {};
       argumentNames.map(function (name) {
-        res[name] = this[name];
+        res[name] = toJSON(this[name]);
       }, this);
       return res;
     },
@@ -148,6 +148,10 @@ function caseClassify(Ctor, name, defaults) {
   });
 
   return Factory;
+}
+
+function toJSON(obj) {
+  return obj.toJSON ? obj.toJSON() : obj;
 }
 
 exports.caseClassify = caseClassify;

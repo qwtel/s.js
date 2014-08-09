@@ -49,7 +49,7 @@ describe 'CaseClass', ->
         foo2 = Foo()
         expect(foo2.equals(foo)).toBe(true)
         
-      it 'should have equality', ->
+      it 'should not equal another case class with the same values', ->
         Bar = CaseClass('Bar', {a: 1, b: 2}).body()
         bar = Bar()
         expect(bar.equals(foo)).toBe(false)

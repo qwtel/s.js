@@ -1,113 +1,50 @@
 var Any = require('../Any.js').Any;
 
-var extend = require('./common/extend.js').extend;
 var isString = require('./common/typeCheck.js').isString;
 var isFunction = require('./common/typeCheck.js').isFunction;
 
-function makeClassBuilder(WithTraitClassBuilder) {
-  function ClassBuilder(Ctor, name) {
-    if (isFunction(Ctor)) {
-      this.Ctor = Ctor;
-      name = name || Ctor.name;
-    } else {
-      this.Ctor = function Class() {
-        if (this.constructor) {
-          this.constructor.apply(this, arguments);
-        }
-      };
-      name = Ctor
-    }
+var init = require('./Trait').init;
+var extendz = require('./Trait').extendz;
+var withz = require('./Trait').withz;
+var body = require('./Trait').body;
 
-    this.name = name;
-    this.Ctor.prototype = Object.create(Any.prototype);
-    this.Ctor.prototype['__' + this.name + '__'] = true;
+// duplicate
+function getName(fn) {
+  // TODO: Cross-browser?
+  return fn.name;
+}
+
+function ClassBuilder(Ctor) {
+  init.call(this, function Class() {
+  }, Ctor);
+}
+
+ClassBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
+
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
+  body: function (obj) {
+    return body.call(this, obj);
+  },
+
+  // Aliases
+
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
   }
+};
 
-  ClassBuilder.prototype = {
-    body: function (body) {
-      body = body || {};
-      extend(this.Ctor.prototype, body);
-      this.Ctor.prototype.name = this.name;
-      this.Ctor.prototype.__name__ = this.name;
-      return this.Ctor;
-    },
-
-    extendz: function (Parent) {
-      this.Ctor.prototype = Object.create(Parent.prototype);
-
-      if (!Parent.__Any__) {
-        extend(this.Ctor.prototype, Any.prototype);
-      }
-
-      this.Ctor.prototype['__' + this.name + '__'] = true;
-
-      return new WithTraitClassBuilder(this);
-    },
-
-    'extends': function (Parent) {
-      return this.extendz(Parent);
-    },
-
-    withz: function (trt) {
-      if (isFunction(trt)) { // Traits are functions
-        extend(this.Ctor.prototype, trt.prototype);
-        return new WithTraitClassBuilder(this);
-      } else {
-        return this.body(trt);
-      }
-    },
-
-    'with': function (trt) {
-      return this.withz(trt);
-    }
-  };
-
-  return ClassBuilder;
+function Class(Ctor) {
+  return new ClassBuilder(Ctor);
 }
-
-function makeWithTraitClassBuilder() {
-  function WithTraitClassBuilder(instance) {
-    this.name = instance.name;
-    this.Ctor = instance.Ctor;
-  }
-
-  WithTraitClassBuilder.prototype = {
-    body: function (body) {
-      body = body || {};
-      extend(this.Ctor.prototype, body);
-      this.Ctor.prototype.name = this.name;
-      this.Ctor.prototype.__name__ = this.name;
-      return this.Ctor;
-    },
-
-    withz: function (trt) {
-      if (isFunction(trt)) { // Traits are functions
-        extend(this.Ctor.prototype, trt.prototype);
-        return this;
-      } else {
-        return this.body(trt);
-      }
-    },
-
-    'with': function (trt) {
-      return this.withz(trt);
-    }
-  };
-
-  return WithTraitClassBuilder;
-}
-
-var WithTraitClassBuilder = makeWithTraitClassBuilder();
-var ClassBuilder = makeClassBuilder(WithTraitClassBuilder);
-
-function Class(Ctor, name) {
-  return new ClassBuilder(Ctor, name);
-}
-
-exports.makeClassBuilder = makeClassBuilder;
-exports.makeWithTraitClassBuilder = makeWithTraitClassBuilder;
-
-//exports.ClassBuilder = ClassBuilder;
-//exports.WithTraitClassBuilder = WithTraitClassBuilder;
 
 exports.Class = Class;

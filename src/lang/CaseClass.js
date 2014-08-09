@@ -1,8 +1,3 @@
-var Any = require('../Any.js').Any;
-
-var makeClassBuilder = require('./Class.js').makeClassBuilder;
-var makeWithTraitClassBuilder = require('./Class.js').makeWithTraitClassBuilder;
-
 var caseClassify = require('./common/caseClassify.js').caseClassify;
 
 var isFunction = require('./common/typeCheck.js').isFunction;
@@ -10,77 +5,56 @@ var isString = require('./common/typeCheck.js').isString;
 var isArray = require('./common/typeCheck.js').isArray;
 var isObject = require('./common/typeCheck.js').isObject;
 
+var init = require('./Trait').init;
+var extendz = require('./Trait').extendz;
+var withz = require('./Trait').withz;
+var body = require('./Trait').body;
+
 function getName(fn) {
   // TODO: Cross-browser?
   return fn.name;
 }
 
-function makeCaseClassBuilder(ClassBuilder) {
+function CaseClassBuilder(Ctor, defaults) {
+  init.call(this, function CaseClass() {
+  }, Ctor);
 
-  function CaseClassBuilder(name, Ctor) {
-    if (isFunction(name)) {
-      this.Ctor = name;
-      this.name = getName(this.Ctor);
+  if (defaults) {
+    if (isObject(defaults)) {
+      this.defaults = defaults;
+    } else {
+      throw new Error("Invalid case class construction. Second parameter must be an object of default values.")
     }
-    else if (isString(name)) {
-      this.Ctor = function CaseClass() {
-        if (this.constructor) {
-          this.constructor.apply(this, arguments);
-        }
-      };
-      this.name = name;
-    }
-    else {
-      throw Error("wrong")
-    }
-
-    if (isObject(Ctor)) {
-      this.defaults = Ctor;
-    }
-
-    this.Ctor.prototype = Object.create(Any.prototype);
-    this.Ctor.prototype['__' + this.name + '__'] = true;
   }
-
-  CaseClassBuilder.prototype = Object.create(ClassBuilder.prototype);
-
-  CaseClassBuilder.prototype.body = function (body) {
-    var Ctor = ClassBuilder.prototype.body.call(this, body); // super.body(body);
-    return caseClassify(Ctor, this.name, this.defaults);
-  };
-
-  return CaseClassBuilder;
 }
 
-function makeWithTraitCaseClassBuilder(WithTraitClassBuilder) {
+CaseClassBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
 
-  function WithTraitCaseClassBuilder(instance) {
-    this.name = instance.name;
-    this.Ctor = instance.Ctor;
-    this.defaults = instance.defaults;
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
+  body: function (obj) {
+    var Ctor = body.call(this, obj);
+    return caseClassify(Ctor, this.name, this.defaults);
+  },
+
+  // Aliases
+
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
   }
+};
 
-  WithTraitCaseClassBuilder.prototype = Object.create(WithTraitClassBuilder.prototype);
-
-  WithTraitCaseClassBuilder.prototype.body = function (body) {
-    var Ctor = WithTraitClassBuilder.prototype.body.call(this, body); // super.body(body);
-    return caseClassify(Ctor, this.name, this.defaults);
-  };
-
-  return WithTraitCaseClassBuilder;
+function CaseClass(Ctor, defaults) {
+  return new CaseClassBuilder(Ctor, defaults);
 }
-
-var WithTraitCaseClassBuilder = makeWithTraitCaseClassBuilder(makeWithTraitClassBuilder());
-var CaseClassBuilder = makeCaseClassBuilder(makeClassBuilder(WithTraitCaseClassBuilder));
-
-function CaseClass(name, Ctor) {
-  return new CaseClassBuilder(name, Ctor);
-}
-
-exports.makeWithTraitCaseClassBuilder = makeWithTraitCaseClassBuilder;
-exports.makeCaseClassBuilder = makeCaseClassBuilder;
-
-//exports.CaseClassBuilder = CaseClassBuilder;
-//exports.WithTraitCaseClassBuilder = WithTraitCaseClassBuilder;
 
 exports.CaseClass = CaseClass;

@@ -458,11 +458,6 @@ var lang = {
 module.exports = lang;
 
 },{"./lang/CaseClass.js":8,"./lang/CaseSingleton.js":9,"./lang/Class.js":10,"./lang/Singleton.js":11,"./lang/Trait.js":12}],8:[function(_dereq_,module,exports){
-var Any = _dereq_('../Any.js').Any;
-
-var makeClassBuilder = _dereq_('./Class.js').makeClassBuilder;
-var makeWithTraitClassBuilder = _dereq_('./Class.js').makeWithTraitClassBuilder;
-
 var caseClassify = _dereq_('./common/caseClassify.js').caseClassify;
 
 var isFunction = _dereq_('./common/typeCheck.js').isFunction;
@@ -470,94 +465,108 @@ var isString = _dereq_('./common/typeCheck.js').isString;
 var isArray = _dereq_('./common/typeCheck.js').isArray;
 var isObject = _dereq_('./common/typeCheck.js').isObject;
 
+var init = _dereq_('./Trait').init;
+var extendz = _dereq_('./Trait').extendz;
+var withz = _dereq_('./Trait').withz;
+var body = _dereq_('./Trait').body;
+
 function getName(fn) {
   // TODO: Cross-browser?
   return fn.name;
 }
 
-function makeCaseClassBuilder(ClassBuilder) {
+function CaseClassBuilder(Ctor, defaults) {
+  init(function CaseClass() {
+  }, Ctor);
 
-  function CaseClassBuilder(name, Ctor) {
-    if (isFunction(name)) {
-      this.Ctor = name;
-      this.name = getName(this.Ctor);
+  if (defaults) {
+    if (isObject(defaults)) {
+      this.defaults = defaults;
+    } else {
+      throw new Error("Invalid case class construction. Second parameter must be an object of default values.")
     }
-    else if (isString(name)) {
-      this.Ctor = function CaseClass() {
-        if (this.constructor) {
-          this.constructor.apply(this, arguments);
-        }
-      };
-      this.name = name;
-    }
-    else {
-      throw Error("wrong")
-    }
-
-    if (isObject(Ctor)) {
-      this.defaults = Ctor;
-    }
-
-    this.Ctor.prototype = Object.create(Any.prototype);
-    this.Ctor.prototype['__' + this.name + '__'] = true;
   }
-
-  CaseClassBuilder.prototype = Object.create(ClassBuilder.prototype);
-
-  CaseClassBuilder.prototype.body = function (body) {
-    var Ctor = ClassBuilder.prototype.body.call(this, body); // super.body(body);
-    return caseClassify(Ctor, this.name, this.defaults);
-  };
-
-  return CaseClassBuilder;
 }
 
-function makeWithTraitCaseClassBuilder(WithTraitClassBuilder) {
+CaseClassBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
 
-  function WithTraitCaseClassBuilder(instance) {
-    this.name = instance.name;
-    this.Ctor = instance.Ctor;
-    this.defaults = instance.defaults;
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
+  body: function (obj) {
+    var Ctor = body.call(this, obj);
+    return caseClassify(Ctor, this.name, this.defaults);
+  },
+
+  // Aliases
+
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
   }
+};
 
-  WithTraitCaseClassBuilder.prototype = Object.create(WithTraitClassBuilder.prototype);
-
-  WithTraitCaseClassBuilder.prototype.body = function (body) {
-    var Ctor = WithTraitClassBuilder.prototype.body.call(this, body); // super.body(body);
-    return caseClassify(Ctor, this.name, this.defaults);
-  };
-
-  return WithTraitCaseClassBuilder;
+function CaseClass(Ctor, defaults) {
+  return new CaseClassBuilder(Ctor, defaults);
 }
-
-var WithTraitCaseClassBuilder = makeWithTraitCaseClassBuilder(makeWithTraitClassBuilder());
-var CaseClassBuilder = makeCaseClassBuilder(makeClassBuilder(WithTraitCaseClassBuilder));
-
-function CaseClass(name, Ctor) {
-  return new CaseClassBuilder(name, Ctor);
-}
-
-exports.makeWithTraitCaseClassBuilder = makeWithTraitCaseClassBuilder;
-exports.makeCaseClassBuilder = makeCaseClassBuilder;
-
-//exports.CaseClassBuilder = CaseClassBuilder;
-//exports.WithTraitCaseClassBuilder = WithTraitCaseClassBuilder;
 
 exports.CaseClass = CaseClass;
 
-},{"../Any.js":1,"./Class.js":10,"./common/caseClassify.js":14,"./common/typeCheck.js":20}],9:[function(_dereq_,module,exports){
-var makeClassBuilder = _dereq_('./Class.js').makeClassBuilder;
-var makeWithTraitClassBuilder = _dereq_('./Class.js').makeWithTraitClassBuilder;
+},{"./Trait":12,"./common/caseClassify.js":14,"./common/typeCheck.js":20}],9:[function(_dereq_,module,exports){
+var caseClassify = _dereq_('./common/caseClassify.js').caseClassify;
 
-var makeCaseClassBuilder = _dereq_('./CaseClass.js').makeCaseClassBuilder;
-var makeWithTraitCaseClassBuilder = _dereq_('./CaseClass.js').makeWithTraitCaseClassBuilder;
+var init = _dereq_('./Trait').init;
+var extendz = _dereq_('./Trait').extendz;
+var withz = _dereq_('./Trait').withz;
+var body = _dereq_('./Trait').body;
 
-var makeSingletonBuilder = _dereq_('./Singleton.js').makeSingletonBuilder;
-var makeWithTraitSingletonBuilder = _dereq_('./Singleton.js').makeWithTraitSingletonBuilder;
+var isFunction = _dereq_('./common/typeCheck.js').isFunction;
 
-// Where is your god now?
-var WithTraitCaseSingletonBuilder = makeWithTraitSingletonBuilder(makeWithTraitCaseClassBuilder(makeWithTraitClassBuilder()));
-var CaseSingletonBuilder = makeSingletonBuilder(makeCaseClassBuilder(makeClassBuilder(WithTraitCaseSingletonBuilder)));
+function CaseSingletonBuilder(Ctor, defaults) {
+  if (isFunction(Ctor) && Ctor.length !== 0) {
+    console.warn('Case Singletons can not have constructor arguments.');
+  }
+  if (defaults) {
+    console.warn('Case Singletons can not have default values');
+  }
+  
+  init(function CaseSingleton() {
+  }, Ctor);
+}
+
+CaseSingletonBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
+
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
+  body: function (obj) {
+    var Ctor = body.call(this, obj);
+    Ctor = caseClassify(Ctor, this.name);
+    Ctor.instance = new Ctor();
+    return Ctor.instance;
+  },
+
+  // Aliases
+
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
+  }
+};
 
 function CaseSingleton(Ctor) {
   return new CaseSingletonBuilder(Ctor);
@@ -565,240 +574,210 @@ function CaseSingleton(Ctor) {
 
 exports.CaseSingleton = CaseSingleton;
 
-},{"./CaseClass.js":8,"./Class.js":10,"./Singleton.js":11}],10:[function(_dereq_,module,exports){
+
+},{"./Trait":12,"./common/caseClassify.js":14,"./common/typeCheck.js":20}],10:[function(_dereq_,module,exports){
 var Any = _dereq_('../Any.js').Any;
 
-var extend = _dereq_('./common/extend.js').extend;
 var isString = _dereq_('./common/typeCheck.js').isString;
 var isFunction = _dereq_('./common/typeCheck.js').isFunction;
 
-function makeClassBuilder(WithTraitClassBuilder) {
-  function ClassBuilder(Ctor, name) {
-    if (isFunction(Ctor)) {
-      this.Ctor = Ctor;
-      name = name || Ctor.name;
-    } else {
-      this.Ctor = function Class() {
-        if (this.constructor) {
-          this.constructor.apply(this, arguments);
-        }
-      };
-      name = Ctor
-    }
+var init = _dereq_('./Trait').init;
+var extendz = _dereq_('./Trait').extendz;
+var withz = _dereq_('./Trait').withz;
+var body = _dereq_('./Trait').body;
 
-    this.name = name;
-    this.Ctor.prototype = Object.create(Any.prototype);
-    this.Ctor.prototype['__' + this.name + '__'] = true;
+// duplicate
+function getName(fn) {
+  // TODO: Cross-browser?
+  return fn.name;
+}
+
+function ClassBuilder(Ctor) {
+  init(function Class() {
+  }, Ctor);
+}
+
+ClassBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
+
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
+  body: function (obj) {
+    return body.call(this, obj);
+  },
+
+  // Aliases
+
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
   }
+};
 
-  ClassBuilder.prototype = {
-    body: function (body) {
-      body = body || {};
-      extend(this.Ctor.prototype, body);
-      this.Ctor.prototype.name = this.name;
-      this.Ctor.prototype.__name__ = this.name;
-      return this.Ctor;
-    },
-
-    extendz: function (Parent) {
-      this.Ctor.prototype = Object.create(Parent.prototype);
-
-      if (!Parent.__Any__) {
-        extend(this.Ctor.prototype, Any.prototype);
-      }
-
-      this.Ctor.prototype['__' + this.name + '__'] = true;
-
-      return new WithTraitClassBuilder(this);
-    },
-
-    'extends': function (Parent) {
-      return this.extendz(Parent);
-    },
-
-    withz: function (trt) {
-      if (isFunction(trt)) { // Traits are functions
-        extend(this.Ctor.prototype, trt.prototype);
-        return new WithTraitClassBuilder(this);
-      } else {
-        return this.body(trt);
-      }
-    },
-
-    'with': function (trt) {
-      return this.withz(trt);
-    }
-  };
-
-  return ClassBuilder;
+function Class(Ctor) {
+  return new ClassBuilder(Ctor);
 }
-
-function makeWithTraitClassBuilder() {
-  function WithTraitClassBuilder(instance) {
-    this.name = instance.name;
-    this.Ctor = instance.Ctor;
-  }
-
-  WithTraitClassBuilder.prototype = {
-    body: function (body) {
-      body = body || {};
-      extend(this.Ctor.prototype, body);
-      this.Ctor.prototype.name = this.name;
-      this.Ctor.prototype.__name__ = this.name;
-      return this.Ctor;
-    },
-
-    withz: function (trt) {
-      if (isFunction(trt)) { // Traits are functions
-        extend(this.Ctor.prototype, trt.prototype);
-        return this;
-      } else {
-        return this.body(trt);
-      }
-    },
-
-    'with': function (trt) {
-      return this.withz(trt);
-    }
-  };
-
-  return WithTraitClassBuilder;
-}
-
-var WithTraitClassBuilder = makeWithTraitClassBuilder();
-var ClassBuilder = makeClassBuilder(WithTraitClassBuilder);
-
-function Class(Ctor, name) {
-  return new ClassBuilder(Ctor, name);
-}
-
-exports.makeClassBuilder = makeClassBuilder;
-exports.makeWithTraitClassBuilder = makeWithTraitClassBuilder;
-
-//exports.ClassBuilder = ClassBuilder;
-//exports.WithTraitClassBuilder = WithTraitClassBuilder;
 
 exports.Class = Class;
 
-},{"../Any.js":1,"./common/extend.js":16,"./common/typeCheck.js":20}],11:[function(_dereq_,module,exports){
-var makeClassBuilder = _dereq_('./Class.js').makeClassBuilder;
-var makeWithTraitClassBuilder = _dereq_('./Class.js').makeWithTraitClassBuilder;
+},{"../Any.js":1,"./Trait":12,"./common/typeCheck.js":20}],11:[function(_dereq_,module,exports){
+var init = _dereq_('./Trait').init;
+var extendz = _dereq_('./Trait').extendz;
+var withz = _dereq_('./Trait').withz;
+var body = _dereq_('./Trait').body;
 
-function makeSingletonBuilder(ClassBuilder) {
+var isFunction = _dereq_('./common/typeCheck.js').isFunction;
 
-  function SingletonBuilder(Ctor) {
-    ClassBuilder.call(this, Ctor);
+function SingletonBuilder(Ctor) {
+  if (isFunction(Ctor) && Ctor.length !== 0) {
+    console.warn('Singletons can not have constructor arguments.');
   }
-
-  SingletonBuilder.prototype = Object.create(ClassBuilder.prototype);
-
-  SingletonBuilder.prototype.body = function (body) {
-    var Ctor = ClassBuilder.prototype.body.call(this, body); // super.body(body);
-    if (!Ctor.instance) {
-      Ctor.instance = new Ctor();
-    }
-    return Ctor.instance;
-  };
-
-  return SingletonBuilder;
+  init(function Singleton() {
+  }, Ctor);
 }
 
-function makeWithTraitSingletonBuilder(WithTraitClassBuilder) {
+SingletonBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
 
-  function WithTraitCaseClassBuilder(instance) {
-    WithTraitClassBuilder.call(this, instance);
-  }
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
 
-  WithTraitCaseClassBuilder.prototype = Object.create(WithTraitClassBuilder.prototype);
-
-  WithTraitCaseClassBuilder.prototype.body = function (body) {
-    var Ctor = WithTraitClassBuilder.prototype.body.call(this, body); // super.body(body);
-    if (!Ctor.instance) {
-      Ctor.instance = new Ctor();
-    }
+  body: function (obj) {
+    var Ctor = body.call(this, obj);
+    Ctor.instance = new Ctor();
     return Ctor.instance;
-  };
+  },
 
-  return WithTraitCaseClassBuilder;
-}
+  // Aliases
 
-var WithTraitSingletonBuilder = makeWithTraitSingletonBuilder(makeWithTraitClassBuilder());
-var SingletonBuilder = makeSingletonBuilder(makeClassBuilder(WithTraitSingletonBuilder));
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
+  }
+};
 
 function Singleton(Ctor) {
   return new SingletonBuilder(Ctor);
 }
 
-exports.makeSingletonBuilder = makeSingletonBuilder;
-exports.makeWithTraitSingletonBuilder = makeWithTraitSingletonBuilder;
-
-//exports.SingletonBuilder = SingletonBuilder;
-//exports.WithTraitSingletonBuilder = WithTraitSingletonBuilder;
-
 exports.Singleton = Singleton;
 
-},{"./Class.js":10}],12:[function(_dereq_,module,exports){
+},{"./Trait":12,"./common/typeCheck.js":20}],12:[function(_dereq_,module,exports){
 var Any = _dereq_('../Any.js').Any;
 
-var extend = _dereq_('./common/extend.js').extend;
 var isFunction = _dereq_('./common/typeCheck.js').isFunction;
+var isString = _dereq_('./common/typeCheck.js').isString;
 
-function TraitBuilder(name) {
-  if (isFunction(name)) {
-    this.Ctor = name;
-    name = name.name;
+// duplicate
+function getName(fn) {
+  // TODO: Cross-browser?
+  return fn.name;
+}
+
+function _extend(trt) {
+  for (var key in trt.prototype) {
+    var prop = trt.prototype[key];
+    if (prop !== Trait.required) {
+      this.Ctor.prototype[key] = prop;
+    }
   }
-  else {
-    this.Ctor = function Trait() {
-    };
-    this.Ctor.prototype = Object.create(Any.prototype);
+}
+
+function init(DefaultCtor, Ctor) {
+  if (isFunction(Ctor)) {
+    this.Ctor = Ctor;
+    this.name = getName(Ctor);
+  } else if (isString(Ctor)) {
+    this.Ctor = DefaultCtor;
+    this.name = Ctor
+  } else {
+    throw new Error("Invalid class construction. First parameter must be a class constructor (function) or a class name (string).")
   }
 
-  this.Ctor.prototype.name = name;
-  this.Ctor.prototype['__' + name + '__'] = true;
+  this.Ctor.prototype = Object.create(Any.prototype);
+  this.Ctor.prototype.constructor = this.Ctor;
+  this.Ctor.prototype['__' + this.name + '__'] = true;
+}
+
+function extendz(trt) {
+  this.Ctor.prototype = Object.create(trt.prototype);
+  if (!trt.__Any__) {
+    _extend.call(this, Any.prototype);
+  }
+  this.Ctor.prototype.constructor = this.Ctor;
+  this.Ctor.prototype['__' + this.name + '__'] = true;
+
+  return this;
+}
+
+function withz(trt) {
+  if (isFunction(trt)) { // Traits are functions
+    _extend.call(this, trt.prototype);
+    return this;
+  } else {
+    return this.body(trt);
+  }
+}
+
+function body(obj) {
+  obj = obj || {};
+  
+  var Ctor = this.Ctor;
+  if (obj.hasOwnProperty('constructor')) {
+    Ctor = obj.constructor;
+    Ctor.prototype = Object.create(this.Ctor.prototype);
+    Ctor.prototype.constructor = Ctor;
+    //delete obj.constructor;
+  }
+  
+  _extend(Ctor.prototype, obj);
+  Ctor.prototype.name = this.name;
+  Ctor.prototype.__name__ = this.name;
+  return Ctor;
+}
+
+function TraitBuilder(Ctor) {
+  init(function Trait() {
+  }, Ctor);
 }
 
 TraitBuilder.prototype = {
-  withz: function (trt) {
-    if (isFunction(trt)) { // Traits are functions
-      extend(this.Ctor.prototype, trt.prototype);
-      return this;
-    } else {
-      return this.body(trt);
-    }
+  body: function (obj) {
+    return body.call(this, obj);
   },
-  
-  'with': function (trt) {
-    return this.withz(trt);
-  },
-  
+
   extendz: function (trt) {
-    this.Ctor.prototype = trt.prototype;
-
-    if (!trt.__Any__) {
-      extend(this.Ctor.prototype, Any.prototype);
-    }
-
-    this.Ctor.prototype['__' + this.name + '__'] = true;
-    
-    // TODO: WithTraitTraitBuilder
-    return this;
+    return extendz.call(this, trt);
   },
-  
+
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
+
   'extends': function (trt) {
-    return this.extendz(trt);
+    return extendz.call(this, trt);
   },
-  
-  body: function (body) {
-    body = body || {};
-    extend(this.Ctor.prototype, body);
-    return this.Ctor;
+
+  'with': function (trt) {
+    return withz.call(this, trt);
   }
 };
 
-function Trait(name, body) {
-  var traitBuilder = new TraitBuilder(name);
-  return body ? traitBuilder.body(body) : traitBuilder;
+function Trait(Ctor) {
+  return new TraitBuilder(Ctor);
 }
 
 Trait.required = function () {
@@ -806,8 +785,12 @@ Trait.required = function () {
 };
 
 exports.Trait = Trait;
+exports.init = init;
+exports.extendz = extendz;
+exports.withz = withz;
+exports.body = body;
 
-},{"../Any.js":1,"./common/extend.js":16,"./common/typeCheck.js":20}],13:[function(_dereq_,module,exports){
+},{"../Any.js":1,"./common/typeCheck.js":20}],13:[function(_dereq_,module,exports){
 var caseClassify = _dereq_('./common/caseClassify.js').caseClassify;
 var equals = _dereq_('./common/equals.js').equals;
 var extend = _dereq_('./common/extend.js').extend;
@@ -864,14 +847,8 @@ function getArgumentNames(fn) {
   return res;
 }
 
-function getName(fn) {
-  // TODO: Cross-browser?
-  return fn.name;
-}
-
 function caseClassify(Ctor, name, defaults) {
   
-  name = name || getName(Ctor);
   var argumentNames = isObject(defaults) ? Object.keys(defaults) : getArgumentNames(Ctor);
   
   defaults = defaults || {}; // prevent exceptions
@@ -884,7 +861,9 @@ function caseClassify(Ctor, name, defaults) {
 
   // TODO: What is the name property anyway?
   Factory.name = name;
+  Factory.__name__ = name;
 
+  // TODO: undo
   Factory.__product__ = name;
   
   Factory.fromJSON = function (jsonObj) {
@@ -918,7 +897,7 @@ function caseClassify(Ctor, name, defaults) {
     name: name,
 
     copy: function (patchObj) {
-      var copy = new Ctor({});
+      var copy = new Ctor();
       argumentNames.forEach(function (name) {
         if (patchObj[name]) copy[name] = patchObj[name];
         else copy[name] = this[name];
@@ -952,10 +931,12 @@ function caseClassify(Ctor, name, defaults) {
      },
      */
 
+    /*
     hashCode: function () {
       console.warn("hashCode implementation missing");
       return -1;
     },
+    */
 
     /*
      toString: function () {
@@ -1008,6 +989,14 @@ exports.equals = equals;
 },{}],16:[function(_dereq_,module,exports){
 function extend(obj, by) {
   by = by || {};
+  Object.keys(by).forEach(function (key) {
+    obj[key] = by[key];
+  });
+  return obj;
+}
+
+function extendComplete(obj, by) {
+  by = by || {};
   for (var key in by) {
     obj[key] = by[key];
   }
@@ -1015,6 +1004,7 @@ function extend(obj, by) {
 }
 
 exports.extend = extend;
+exports.extendComplete = extendComplete;
 
 },{}],17:[function(_dereq_,module,exports){
 var isString = _dereq_('./typeCheck.js').isString;

@@ -1,55 +1,46 @@
-var makeClassBuilder = require('./Class.js').makeClassBuilder;
-var makeWithTraitClassBuilder = require('./Class.js').makeWithTraitClassBuilder;
+var init = require('./Trait').init;
+var extendz = require('./Trait').extendz;
+var withz = require('./Trait').withz;
+var body = require('./Trait').body;
 
-function makeSingletonBuilder(ClassBuilder) {
+var isFunction = require('./common/typeCheck.js').isFunction;
 
-  function SingletonBuilder(Ctor) {
-    ClassBuilder.call(this, Ctor);
+function SingletonBuilder(Ctor) {
+  if (isFunction(Ctor) && Ctor.length !== 0) {
+    console.warn('Singletons can not have constructor arguments.');
   }
-
-  SingletonBuilder.prototype = Object.create(ClassBuilder.prototype);
-
-  SingletonBuilder.prototype.body = function (body) {
-    var Ctor = ClassBuilder.prototype.body.call(this, body); // super.body(body);
-    if (!Ctor.instance) {
-      Ctor.instance = new Ctor();
-    }
-    return Ctor.instance;
-  };
-
-  return SingletonBuilder;
+  init.call(this, function Singleton() {
+  }, Ctor);
 }
 
-function makeWithTraitSingletonBuilder(WithTraitClassBuilder) {
+SingletonBuilder.prototype = {
+  extendz: function (parent) {
+    return extendz.call(this, parent);
+  },
 
-  function WithTraitCaseClassBuilder(instance) {
-    WithTraitClassBuilder.call(this, instance);
-  }
+  withz: function (trt) {
+    return withz.call(this, trt);
+  },
 
-  WithTraitCaseClassBuilder.prototype = Object.create(WithTraitClassBuilder.prototype);
-
-  WithTraitCaseClassBuilder.prototype.body = function (body) {
-    var Ctor = WithTraitClassBuilder.prototype.body.call(this, body); // super.body(body);
-    if (!Ctor.instance) {
-      Ctor.instance = new Ctor();
-    }
+  body: function (obj) {
+    var Ctor = body.call(this, obj);
+    Ctor.instance = new Ctor();
     return Ctor.instance;
-  };
+  },
 
-  return WithTraitCaseClassBuilder;
-}
+  // Aliases
 
-var WithTraitSingletonBuilder = makeWithTraitSingletonBuilder(makeWithTraitClassBuilder());
-var SingletonBuilder = makeSingletonBuilder(makeClassBuilder(WithTraitSingletonBuilder));
+  'extends': function (Parent) {
+    return this.extendz(Parent);
+  },
+
+  'with': function (trt) {
+    return this.withz(trt);
+  }
+};
 
 function Singleton(Ctor) {
   return new SingletonBuilder(Ctor);
 }
-
-exports.makeSingletonBuilder = makeSingletonBuilder;
-exports.makeWithTraitSingletonBuilder = makeWithTraitSingletonBuilder;
-
-//exports.SingletonBuilder = SingletonBuilder;
-//exports.WithTraitSingletonBuilder = WithTraitSingletonBuilder;
 
 exports.Singleton = Singleton;
