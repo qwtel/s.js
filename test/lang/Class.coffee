@@ -119,7 +119,7 @@ describe 'Class', ->
 
   it 'should be able to use the extends method', ->
     Foo = Class('Foo').body()
-    Bar = Class('Foo').extends(Foo).body()
+    Bar = Class('Bar').extends(Foo).body()
     bar = new Bar
     expect(bar.isInstanceOf(Foo))
     
@@ -163,4 +163,38 @@ describe 'Class', ->
     expect(foo instanceof Foo).toBe true
     expect(foo instanceof Bar).toBe true
     expect(foo instanceof Any).toBe true
+    
+  describe 'advanced inheritance', ->
+    it 'should be able to call the super constructor', ->
+      Foo = Class('Foo').body
+        constructor: (x) -> @x = x
+        
+      Bar = Class('Bar').extends(Foo).body
+        constructor: (x, y) -> 
+          @__super__(x)
+          @y = y
+          
+      bar = new Bar(1,2)
+      
+      expect(bar.x).toBe(1)
+      expect(bar.y).toBe(2)
+      
+    it 'should be able to call a specific super methods', ->
+      Foo = Trait('Foo').body
+        common: -> 'foo'
+          
+      Bar = Trait('Bar').body
+        common: -> 'bar'
+          
+      FooBar = Class('FooBar').extends(Foo).with(Bar).body
+        foo: -> @__supers__['Foo'].common.call(this)
+        bar: -> @__supers__['Bar'].common.call(this)
+        
+      fooBar = new FooBar()
+      
+      expect(fooBar.foo()).toBe('foo')
+      expect(fooBar.bar()).toBe('bar')
+      
+      
+      
     

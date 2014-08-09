@@ -5,8 +5,8 @@ var isString = require('./common/typeCheck.js').isString;
 
 // duplicate
 function getName(fn) {
-  // TODO: Cross-browser?
-  return fn.name;
+  // TODO: fn.name is not always available?
+  return fn.__name__ ? fn.__name__ : fn.name;
 }
 
 function extendProto(trt) {
@@ -35,6 +35,7 @@ function init(DefaultCtor, Ctor) {
     throw new Error("Invalid class construction. First parameter must be a class constructor (function) or a class name (string).")
   }
 
+  this.Ctor.__name__ = this.name;
   this.Ctor.prototype = Object.create(Any.prototype);
   this.Ctor.prototype.constructor = this.Ctor;
   this.Ctor.prototype['__' + this.name + '__'] = true;
@@ -49,6 +50,11 @@ function extendz(trt) {
     }
     this.Ctor.prototype.constructor = this.Ctor;
     this.Ctor.prototype['__' + this.name + '__'] = true;
+
+    this.Ctor.prototype.__super__ = trt;
+
+    this.Ctor.prototype.__supers__ = this.Ctor.prototype.__supers__ || {};
+    this.Ctor.prototype.__supers__[getName(trt)] = trt.prototype;
   } else {
     throw Error("Invalid class construction. Can't extend twice.")
   }
@@ -58,6 +64,10 @@ function extendz(trt) {
 function withz(trt) {
   if (isFunction(trt)) { // Traits are functions
     extendProto.call(this, trt);
+
+    this.Ctor.prototype.__supers__ = this.Ctor.prototype.__supers__ || {};
+    this.Ctor.prototype.__supers__[getName(trt)] = trt.prototype;
+    
     return this;
   } else {
     return this.body(trt);
@@ -66,7 +76,7 @@ function withz(trt) {
 
 function body(obj) {
   obj = obj || {};
-  
+
   var Ctor = this.Ctor;
   if (obj.hasOwnProperty('constructor')) {
     Ctor = obj.constructor;
@@ -74,7 +84,7 @@ function body(obj) {
     Ctor.prototype.constructor = Ctor;
     //delete obj.constructor;
   }
-  
+
   extendObj.call(this, obj);
   Ctor.prototype.name = this.name;
   Ctor.prototype.__name__ = this.name;
@@ -121,3 +131,37 @@ exports.init = init;
 exports.extendz = extendz;
 exports.withz = withz;
 exports.body = body;
+
+/*
+var Person, Student,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function (child, parent) {
+    function ctor() {
+      this.constructor = child;
+    }
+
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor();
+    child.__super__ = parent.prototype;
+    return child;
+  };
+
+Person = (function () {
+  function Person() {
+  }
+
+  return Person;
+
+})();
+
+Student = (function (_super) {
+  __extends(Student, _super);
+
+  function Student() {
+    return Student.__super__.constructor.apply(this, arguments);
+  }
+
+  return Student;
+
+})(Person);
+*/

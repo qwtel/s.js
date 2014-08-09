@@ -108,8 +108,10 @@ describe 'A Option', ->
     expect(o.get()).toBe(1)
     expect(-> n.get()).toThrow();
 
+  ###
   it 'should be able to store null in `Some`', ->
     expect(Some(null).get()).toEqual(null)
+  ###
 
   it 'should have a working `getOrElse` implementation', ->
     expect(o.getOrElse(2)).toBe(1)

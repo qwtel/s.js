@@ -46,9 +46,6 @@ function caseClassify(Ctor, name, defaults) {
   Factory.name = name;
   Factory.__name__ = name;
 
-  // TODO: undo
-  Factory.__product__ = name;
-  
   Factory.fromJSON = function (jsonObj) {
     var cc = new Ctor();
     Object.keys(jsonObj).forEach(function (name) {
