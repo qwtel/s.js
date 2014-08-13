@@ -1,4 +1,8 @@
-option = require('../src/Option.js')
+Any = require('../src/Any').Any
+Equals = require('../src/Equals').Equals
+Product = require('../src/Product').Product
+
+option = require('../src/Option')
 Option = option.Option;
 Some = option.Some;
 None = option.None;
@@ -34,15 +38,19 @@ describe 'A Option', ->
 
   it 'should be instance of Equals', ->
     expect(o.isInstanceOf('Equals')).toBe(true)
+    expect(o.isInstanceOf(Equals)).toBe(true)
     
   it 'should be instance of Product', ->
     expect(o.isInstanceOf('Product')).toBe(true)
+    expect(o.isInstanceOf(Product)).toBe(true)
     
   it 'should be instance of Any', ->
     expect(o.isInstanceOf('Any')).toBe(true)
+    expect(o.isInstanceOf(Any)).toBe(true)
 
   it 'should not be a instance of None', ->
     expect(o.isInstanceOf('None')).toBe(false)
+    expect(o.isInstanceOf(None)).toBe(false)
 
   it 'should not be empty', ->
     expect(o.isEmpty()).toBe(false)

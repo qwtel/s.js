@@ -48,7 +48,7 @@ var CaseClassCase = Class(function CaseClassCase(o) {
   this.o = o;
 }).extends(Case).with({
   doCase: function (Class, f, context) {
-    return (this.o.__factory__.__product__ === Class.__product__ || /* CaseSingleton */ this.o === Class) ?
+    return (this.o.__factory__.__name__ === Class.__name__ || /* CaseSingleton */ this.o === Class) ?
       new Match(f.apply(context, unApp(Class, this.o))) :
       this;
   }

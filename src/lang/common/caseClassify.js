@@ -36,6 +36,19 @@ function caseClassify(Ctor, name, defaults) {
   
   defaults = defaults || {}; // prevent exceptions
   
+  var types = {};
+  Object.keys(defaults).forEach(function (name) {
+    //types[name] = getClass(defaults[name])
+  });
+  
+  function setProp(cc, k, v) {
+    //if (isInstanceOf(v, types[k])) {
+      cc[k] = v;
+    //} else {
+      //throw Error("Can't have property '" + k + "' of type '" + getClass(v) + "' because it's default type is '" + types[v] + "'");
+    //}
+  }
+  
   var Factory = function () {
     return Factory.app.apply(undefined, arguments);
   };
@@ -49,7 +62,7 @@ function caseClassify(Ctor, name, defaults) {
   Factory.fromJSON = function (jsonObj) {
     var cc = new Ctor();
     Object.keys(jsonObj).forEach(function (name) {
-      cc[name] = jsonObj[name] || defaults[argumentNames[i]];
+      setProp(cc, name, (jsonObj[name] || defaults[argumentNames[i]]));
     });
     return cc;
   };
@@ -57,7 +70,7 @@ function caseClassify(Ctor, name, defaults) {
   Factory.app = function () {
     var cc = new Ctor();
     for (var i = 0; i < argumentNames.length; i++) {
-      cc[argumentNames[i]] = arguments[i] || defaults[argumentNames[i]];
+      setProp(cc, argumentNames[i], (arguments[i] || defaults[argumentNames[i]]));
     }
     return cc;
   };
@@ -81,7 +94,9 @@ function caseClassify(Ctor, name, defaults) {
     copy: function (patchObj) {
       var copy = new Ctor();
       argumentNames.forEach(function (name) {
-        if (patchObj[name]) copy[name] = patchObj[name];
+        if (typeof patchObj[name] !== 'undefined') {
+          setProp(copy, name, patchObj[name]);
+        }
         else copy[name] = this[name];
       }, this);
       return copy;

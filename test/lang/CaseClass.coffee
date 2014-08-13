@@ -58,3 +58,15 @@ describe 'CaseClass', ->
       foo = Foo()
       expect(foo.a).toBe 1
       expect(foo.b).toBe 2
+      
+    it 'it should have nested toJSON', ->
+      WrappedFoo = CaseClass("WrappedFoo", {foo: Foo, c: 3}).body()
+      foo = Foo(2, 3)
+      wf = WrappedFoo(foo, 3)
+      expect(wf.toJSON()).toEqual({
+        foo: {
+          a: 2
+          b: 3
+        },
+        c: 3
+      })

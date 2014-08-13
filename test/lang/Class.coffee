@@ -195,6 +195,20 @@ describe 'Class', ->
       expect(fooBar.foo()).toBe('foo')
       expect(fooBar.bar()).toBe('bar')
       
+    it 'should not override properties with `Trait.required`', ->
+      Foo = Trait('Foo').body
+        foo: Trait.required
+
+      FooImpl = Trait('Bar').body
+        foo: -> 'foo'
+          
+      FooBarImpl = Class('FooBarImpl').with(FooImpl).with(Foo).body()
+          
+      f = new FooBarImpl
+          
+      expect(f.foo()).toBe 'foo'
+      
+      
       
       
     
