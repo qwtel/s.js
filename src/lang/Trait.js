@@ -32,7 +32,8 @@ function init(DefaultCtor, Ctor) {
     this.Ctor = DefaultCtor;
     this.name = Ctor
   } else {
-    throw new Error("Invalid class construction. First parameter must be a class constructor (function) or a class name (string).")
+    this.Ctor = DefaultCtor;
+    this.name = 'Anonymous' + (DefaultCtor.getClass ? DefaultCtor.getClass() : '');
   }
 
   this.Ctor.__name__ = this.name;
