@@ -476,7 +476,7 @@ function getName(fn) {
 }
 
 function CaseClassBuilder(Ctor, defaults) {
-  init(function CaseClass() {
+  init.call(this, function CaseClass() {
   }, Ctor);
 
   if (defaults) {
@@ -537,7 +537,7 @@ function CaseSingletonBuilder(Ctor, defaults) {
     console.warn('Case Singletons can not have default values');
   }
   
-  init(function CaseSingleton() {
+  init.call(this, function CaseSingleton() {
   }, Ctor);
 }
 
@@ -593,7 +593,7 @@ function getName(fn) {
 }
 
 function ClassBuilder(Ctor) {
-  init(function Class() {
+  init.call(this, function Class() {
   }, Ctor);
 }
 
@@ -639,7 +639,7 @@ function SingletonBuilder(Ctor) {
   if (isFunction(Ctor) && Ctor.length !== 0) {
     console.warn('Singletons can not have constructor arguments.');
   }
-  init(function Singleton() {
+  init.call(this, function Singleton() {
   }, Ctor);
 }
 
@@ -683,17 +683,23 @@ var isString = _dereq_('./common/typeCheck.js').isString;
 
 // duplicate
 function getName(fn) {
-  // TODO: Cross-browser?
-  return fn.name;
+  // TODO: fn.name is not always available?
+  return fn.__name__ ? fn.__name__ : fn.name;
 }
 
-function _extend(trt) {
+function extendProto(trt) {
   for (var key in trt.prototype) {
     var prop = trt.prototype[key];
     if (prop !== Trait.required) {
       this.Ctor.prototype[key] = prop;
     }
   }
+}
+
+function extendObj(obj) {
+  Object.keys(obj).forEach(function (key) {
+    this.Ctor.prototype[key] = obj[key];
+  }, this);
 }
 
 function init(DefaultCtor, Ctor) {
@@ -704,28 +710,43 @@ function init(DefaultCtor, Ctor) {
     this.Ctor = DefaultCtor;
     this.name = Ctor
   } else {
-    throw new Error("Invalid class construction. First parameter must be a class constructor (function) or a class name (string).")
+    this.Ctor = DefaultCtor;
+    this.name = 'Anonymous' + (DefaultCtor.getClass ? DefaultCtor.getClass() : '');
   }
 
+  this.Ctor.__name__ = this.name;
   this.Ctor.prototype = Object.create(Any.prototype);
   this.Ctor.prototype.constructor = this.Ctor;
   this.Ctor.prototype['__' + this.name + '__'] = true;
 }
 
 function extendz(trt) {
-  this.Ctor.prototype = Object.create(trt.prototype);
-  if (!trt.__Any__) {
-    _extend.call(this, Any.prototype);
-  }
-  this.Ctor.prototype.constructor = this.Ctor;
-  this.Ctor.prototype['__' + this.name + '__'] = true;
+  if (!this.isExtended) {
+    this.isExtended = true;
+    this.Ctor.prototype = Object.create(trt.prototype);
+    if (!trt.__Any__) {
+      extendProto.call(this, Any);
+    }
+    this.Ctor.prototype.constructor = this.Ctor;
+    this.Ctor.prototype['__' + this.name + '__'] = true;
 
+    this.Ctor.prototype.__super__ = trt;
+
+    this.Ctor.prototype.__supers__ = this.Ctor.prototype.__supers__ || {};
+    this.Ctor.prototype.__supers__[getName(trt)] = trt.prototype;
+  } else {
+    throw Error("Invalid class construction. Can't extend twice.")
+  }
   return this;
 }
 
 function withz(trt) {
   if (isFunction(trt)) { // Traits are functions
-    _extend.call(this, trt.prototype);
+    extendProto.call(this, trt);
+
+    this.Ctor.prototype.__supers__ = this.Ctor.prototype.__supers__ || {};
+    this.Ctor.prototype.__supers__[getName(trt)] = trt.prototype;
+    
     return this;
   } else {
     return this.body(trt);
@@ -734,7 +755,7 @@ function withz(trt) {
 
 function body(obj) {
   obj = obj || {};
-  
+
   var Ctor = this.Ctor;
   if (obj.hasOwnProperty('constructor')) {
     Ctor = obj.constructor;
@@ -742,15 +763,15 @@ function body(obj) {
     Ctor.prototype.constructor = Ctor;
     //delete obj.constructor;
   }
-  
-  _extend(Ctor.prototype, obj);
+
+  extendObj.call(this, obj);
   Ctor.prototype.name = this.name;
   Ctor.prototype.__name__ = this.name;
   return Ctor;
 }
 
 function TraitBuilder(Ctor) {
-  init(function Trait() {
+  init.call(this, function Trait() {
   }, Ctor);
 }
 
@@ -789,6 +810,40 @@ exports.init = init;
 exports.extendz = extendz;
 exports.withz = withz;
 exports.body = body;
+
+/*
+var Person, Student,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function (child, parent) {
+    function ctor() {
+      this.constructor = child;
+    }
+
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor();
+    child.__super__ = parent.prototype;
+    return child;
+  };
+
+Person = (function () {
+  function Person() {
+  }
+
+  return Person;
+
+})();
+
+Student = (function (_super) {
+  __extends(Student, _super);
+
+  function Student() {
+    return Student.__super__.constructor.apply(this, arguments);
+  }
+
+  return Student;
+
+})(Person);
+*/
 
 },{"../Any.js":1,"./common/typeCheck.js":20}],13:[function(_dereq_,module,exports){
 var caseClassify = _dereq_('./common/caseClassify.js').caseClassify;
@@ -853,6 +908,19 @@ function caseClassify(Ctor, name, defaults) {
   
   defaults = defaults || {}; // prevent exceptions
   
+  var types = {};
+  Object.keys(defaults).forEach(function (name) {
+    //types[name] = getClass(defaults[name])
+  });
+  
+  function setProp(cc, k, v) {
+    //if (isInstanceOf(v, types[k])) {
+      cc[k] = v;
+    //} else {
+      //throw Error("Can't have property '" + k + "' of type '" + getClass(v) + "' because it's default type is '" + types[v] + "'");
+    //}
+  }
+  
   var Factory = function () {
     return Factory.app.apply(undefined, arguments);
   };
@@ -863,13 +931,10 @@ function caseClassify(Ctor, name, defaults) {
   Factory.name = name;
   Factory.__name__ = name;
 
-  // TODO: undo
-  Factory.__product__ = name;
-  
   Factory.fromJSON = function (jsonObj) {
     var cc = new Ctor();
     Object.keys(jsonObj).forEach(function (name) {
-      cc[name] = jsonObj[name] || defaults[argumentNames[i]];
+      setProp(cc, name, (jsonObj[name] || defaults[argumentNames[i]]));
     });
     return cc;
   };
@@ -877,7 +942,7 @@ function caseClassify(Ctor, name, defaults) {
   Factory.app = function () {
     var cc = new Ctor();
     for (var i = 0; i < argumentNames.length; i++) {
-      cc[argumentNames[i]] = arguments[i] || defaults[argumentNames[i]];
+      setProp(cc, argumentNames[i], (arguments[i] || defaults[argumentNames[i]]));
     }
     return cc;
   };
@@ -894,12 +959,16 @@ function caseClassify(Ctor, name, defaults) {
     // TODO: Better name?
     __factory__: Factory,
 
+    // has been overridden by Product.prototype
+    __name__: name,
     name: name,
 
     copy: function (patchObj) {
       var copy = new Ctor();
       argumentNames.forEach(function (name) {
-        if (patchObj[name]) copy[name] = patchObj[name];
+        if (typeof patchObj[name] !== 'undefined') {
+          setProp(copy, name, patchObj[name]);
+        }
         else copy[name] = this[name];
       }, this);
       return copy;
@@ -948,7 +1017,7 @@ function caseClassify(Ctor, name, defaults) {
     toJSON: function () {
       var res = {};
       argumentNames.map(function (name) {
-        res[name] = this[name];
+        res[name] = toJSON(this[name]);
       }, this);
       return res;
     },
@@ -963,6 +1032,10 @@ function caseClassify(Ctor, name, defaults) {
   });
 
   return Factory;
+}
+
+function toJSON(obj) {
+  return obj.toJSON ? obj.toJSON() : obj;
 }
 
 exports.caseClassify = caseClassify;
@@ -1009,7 +1082,6 @@ exports.extendComplete = extendComplete;
 },{}],17:[function(_dereq_,module,exports){
 var isString = _dereq_('./typeCheck.js').isString;
 
-// TODO: less fuckup
 function isInstanceOf(that, classLike) {
   if (isString(classLike)) {
     return that['__' + classLike + '__'] === true;
@@ -1017,8 +1089,6 @@ function isInstanceOf(that, classLike) {
     return that['__' + classLike.__name__ + '__'] === true;
   } else if (classLike.prototype.__name__) {
     return that['__' + classLike.prototype.__name__ + '__'] === true;
-  } else if (classLike.__product__) {
-    return that['__' + classLike.__product__ + '__'] === true;
   } else {
     return that instanceof classLike;
   }
@@ -1077,7 +1147,7 @@ var CaseClassCase = Class(function CaseClassCase(o) {
   this.o = o;
 }).extends(Case).with({
   doCase: function (Class, f, context) {
-    return (this.o.__factory__.__product__ === Class.__product__ || /* CaseSingleton */ this.o === Class) ?
+    return (this.o.__factory__.__name__ === Class.__name__ || /* CaseSingleton */ this.o === Class) ?
       new Match(f.apply(context, unApp(Class, this.o))) :
       this;
   }
@@ -1184,17 +1254,25 @@ exports.wrap = wrap;
 
 },{"./extend.js":16,"./typeCheck.js":20}],22:[function(_dereq_,module,exports){
 var Class = _dereq_('./Class.js').Class;
+var Trait = _dereq_('./Trait.js').Trait;
+
+var NoStackTrace = Trait('NoStackTrace').body();
 
 var Throwable = Class("Throwable").extends(Error).body({
   constructor: function (message, fileName, lineNumber) {
     Error.call(this, arguments);
-    Error.captureStackTrace(this, this.prototype);
+    
+    if (!this.isInstanceOf(NoStackTrace)) {
+      Error.captureStackTrace(this, this.prototype);
+    }
 
     if (message) this.message = message;
     if (fileName) this.fileName = fileName;
     if (lineNumber) this.lineNumber = lineNumber;
   }
 });
+
+var ControlThrowable = Class("ControlThrowable").extends(Throwable).with(NoStackTrace).body();
 
 var Exception = Class("Exception").extends(Throwable).body({});
 var RuntimeException = Class("RuntimeException").extends(Exception).body({});
@@ -1205,6 +1283,7 @@ var IllegalArgumentException = Class("IllegalArgumentException").extends(Runtime
 // TODO
 
 exports.Throwable = Throwable;
+exports.ControlThrowable = ControlThrowable;
 exports.Exception = Exception;
 exports.RuntimeException = RuntimeException;
 exports.NoSuchElementException = NoSuchElementException;
@@ -1212,7 +1291,7 @@ exports.UnsupportedOperationException = UnsupportedOperationException;
 exports.IndexOutOfBoundsException = IndexOutOfBoundsException;
 exports.IllegalArgumentException = IllegalArgumentException;
 
-},{"./Class.js":10}],23:[function(_dereq_,module,exports){
+},{"./Class.js":10,"./Trait.js":12}],23:[function(_dereq_,module,exports){
 var s = _dereq_('./global.js').s;
 
 var extend = _dereq_('./lang/common/extend.js').extend;

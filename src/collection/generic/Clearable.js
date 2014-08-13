@@ -1,3 +1,7 @@
-/**
- * Created by cell303 on 13/08/14.
- */
+var Trait = require('../../lang/Trait').Trait;
+
+var Clearable = Trait(function Clearable() {}).body({
+  clear: Trait.required
+});
+
+exports.Clearable = Clearable;
